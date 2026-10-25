@@ -13,7 +13,7 @@ use gpui::{
 };
 use gpui::{Window, canvas, div, point, px};
 use i18n::t;
-use input::{ToggleFullscreen, ToggleLyrics, ToggleQueue};
+use input::{OpenMiniPlayer, ToggleFullscreen, ToggleLyrics, ToggleQueue};
 use state::{AppSettings, Playback, PlayerBarLayout, Queue, SideTab, Sonora};
 use ui::{
     Artwork, Button, ExplicitBadge, HoverFade, InlineLink, InlineLinks, Motion, Popup, Room,
@@ -274,6 +274,15 @@ impl PlayerBar {
             .on_click(|_, window, cx| window.dispatch_action(Box::new(ToggleFullscreen), cx))
     }
 
+    fn mini_player_button(&self) -> Button {
+        Button::new("open-mini-player")
+            .ghost()
+            .small()
+            .icon("icons/external-link.svg")
+            .tooltip_above("mini-player-new")
+            .on_click(|_, window, cx| window.dispatch_action(Box::new(OpenMiniPlayer), cx))
+    }
+
     fn now_playing(&self, room: bool, window: &Window, cx: &mut Context<Self>) -> gpui::Div {
         div()
             .flex()
@@ -484,7 +493,7 @@ impl Render for PlayerBar {
         let height = Self::height(window, cx);
         let clock_text = theme.text(ui::Text::Tiny);
         // Equal wings keep the title centered while reserving the original volume slider width.
-        let centered_wing = theme.metrics.control * 4. + px(VOLUME_WIDTH) + theme.metrics.pad * 3.;
+        let centered_wing = theme.metrics.control * 5. + px(VOLUME_WIDTH) + theme.metrics.pad * 4.;
 
         let show_track = span.fits(Room::Snug);
         let sides = match SidebarRight::available(window) {
@@ -599,6 +608,7 @@ impl Render for PlayerBar {
                         .children(sides)
                         .child(self.sound(Self::volume_width(window), cx))
                         .child(self.devices.clone())
+                        .child(self.mini_player_button())
                         .child(self.fullscreen_button()),
                 ),
             (false, PlayerBarLayout::Centered) => base
@@ -640,6 +650,7 @@ impl Render for PlayerBar {
                         .child(self.devices.clone())
                         .children(sides)
                         .child(self.sound(px(VOLUME_WIDTH), cx))
+                        .child(self.mini_player_button())
                         .child(self.fullscreen_button()),
                 ),
             (false, PlayerBarLayout::Compact) => base
@@ -654,6 +665,7 @@ impl Render for PlayerBar {
                 .child(self.devices.clone())
                 .children(sides)
                 .child(self.sound(px(VOLUME_WIDTH), cx))
+                .child(self.mini_player_button())
                 .child(self.fullscreen_button()),
             _ => base
                 .items_center()
@@ -682,6 +694,7 @@ impl Render for PlayerBar {
                         .child(self.devices.clone())
                         .children(sides)
                         .child(self.sound(px(VOLUME_WIDTH), cx))
+                        .child(self.mini_player_button())
                         .child(self.fullscreen_button()),
                 ),
         };

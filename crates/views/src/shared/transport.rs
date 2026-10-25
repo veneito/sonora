@@ -167,7 +167,7 @@ fn repeat(playback: &Entity<Playback>, frosted: bool, cx: &App) -> Button {
         })
 }
 
-fn previous(playback: &Entity<Playback>, frosted: bool, cx: &App) -> Button {
+pub(crate) fn previous(playback: &Entity<Playback>, frosted: bool, cx: &App) -> Button {
     let enabled = steered(cx).is_some() || playback.read(cx).has_previous(cx);
     let playback = playback.clone();
 
@@ -183,7 +183,12 @@ fn previous(playback: &Entity<Playback>, frosted: bool, cx: &App) -> Button {
         })
 }
 
-fn next(playback: &Entity<Playback>, queue: &Entity<Queue>, frosted: bool, cx: &App) -> Button {
+pub(crate) fn next(
+    playback: &Entity<Playback>,
+    queue: &Entity<Queue>,
+    frosted: bool,
+    cx: &App,
+) -> Button {
     let enabled = steered(cx).is_some() || queue.read(cx).has_next();
     let playback = playback.clone();
 

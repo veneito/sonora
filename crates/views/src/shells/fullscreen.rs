@@ -10,7 +10,7 @@ use gpui::{
 };
 use gpui::{Window, canvas, deferred, div, phi, px, relative};
 use i18n::t;
-use input::{ToggleFullscreen, ToggleWindowFullscreen, WORKSPACE_CONTEXT};
+use input::{OpenMiniPlayer, ToggleFullscreen, ToggleWindowFullscreen, WORKSPACE_CONTEXT};
 use router::{Destination, navigate};
 use state::{AppSettings, Cover, FullscreenControlsAutohide, Playback, Queue, SideTab, Sonora};
 use ui::{
@@ -749,14 +749,14 @@ impl FullscreenView {
     }
 
     /// The pill, the seek bar and the transport row. Below `Room::Roomy` the row spans the
-    /// whole window, so the volume button steps one control in from the right edge to leave the
-    /// corner to the leave button.
+    /// whole window, so the volume button leaves room at the right edge for the mini player
+    /// and leave buttons.
     fn controls(&self, room: Room, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = *cx.theme();
         let inline = self.panel.is_none();
         let clear = match room.fits(Room::Roomy) {
             true => Pixels::ZERO,
-            false => theme.metrics.control_small,
+            false => theme.metrics.control_small * 2. + theme.metrics.pad,
         };
 
         div()
@@ -1028,7 +1028,7 @@ impl FullscreenView {
         )
     }
 
-    /// The leave button in the bottom right corner, centred on a player bar's height at every
+    /// The mini player and leave buttons in the bottom right corner, centred on a player bar's height at every
     /// width, so the breakpoint that stacks the chrome player bar cannot move it, and nudged
     /// down by `LEAVE_DROP` to sit level with the volume button's glyph. It sinks and
     /// fades with the idle spring rather than with the controls, so a pointer move still brings
@@ -1044,13 +1044,22 @@ impl FullscreenView {
             .right_5()
             .h(snapped(theme.metrics.player_bar, window))
             .flex()
-            .flex_col()
-            .justify_center()
+            .items_center()
+            .gap_2()
             .opacity(1. - idle)
             .on_hover(cx.listener(|this, hovering: &bool, _, cx| {
                 this.over_leave = *hovering;
                 cx.notify();
             }))
+            .child(
+                Button::new("open-mini-player")
+                    .ghost()
+                    .when(frosted, Button::frosted)
+                    .small()
+                    .icon("icons/external-link.svg")
+                    .tooltip_above("mini-player-new")
+                    .on_click(|_, window, cx| window.dispatch_action(Box::new(OpenMiniPlayer), cx)),
+            )
             .child(
                 Button::new("leave-fullscreen")
                     .ghost()
